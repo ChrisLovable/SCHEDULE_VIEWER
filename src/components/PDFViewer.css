@@ -1,12 +1,14 @@
 /* Mobile-First Base Styles */
 .pdf-viewer {
-  width: 100%;
-  height: 100vh;
+  width: 100% !important;
+  height: 100vh !important;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch; /* Stretch to fill width */
   overflow: hidden;
   background: #1a1a1a;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 .loading {
@@ -58,8 +60,8 @@
 }
 
 .pdf-container {
-  width: 100%;
-  height: 100%;
+  width: 100% !important;
+  height: 100% !important;
   background: #1a1a1a;
   border-radius: 0;
   box-shadow: none;
@@ -67,14 +69,19 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 .pdf-header {
   background: rgba(20, 20, 30, 0.95);
-  padding: 0.5rem 0.75rem;
+  padding: 0.15rem 0.5rem !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   text-align: center;
   flex-shrink: 0;
+  margin: 0 !important;
+  min-height: 0;
+  line-height: 1.2;
 }
 
 .page-info {
@@ -85,12 +92,12 @@
 }
 
 .canvas-wrapper {
-  width: 100%;
+  width: 100% !important;
   flex: 1;
   overflow: auto; /* Allow scrolling when zoomed - works with native zoom */
   background: #1a1a1a;
   display: flex;
-  justify-content: center; /* Center the canvas */
+  justify-content: flex-start; /* Start from top-left, no centering space */
   align-items: flex-start;
   padding: 0 !important; /* No padding - eliminate all white space */
   margin: 0 !important; /* No margin */
@@ -99,7 +106,8 @@
   position: relative;
   min-height: 0 !important; /* Allow shrinking */
   min-width: 0 !important; /* Allow shrinking */
-  /* Zero white space - PDF fills full width */
+  height: 100% !important;
+  /* Zero white space - PDF fills full width and height */
 }
 
 .pdf-canvas {

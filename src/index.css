@@ -13,9 +13,13 @@ body {
   background: #0f0f0f;
   color: #e0e0e0;
   min-height: 100vh;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 #root {
   min-height: 100vh;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 

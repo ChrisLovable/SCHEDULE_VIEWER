@@ -172,7 +172,10 @@ function PDFViewer({ employeeId, pdfPath = '/INDIVIDUAL_SCHEDULES.PDF' }) {
     // Get full available width - use entire container width (no padding/margin)
     const containerWidth = container?.clientWidth || 0
     const windowWidth = window.innerWidth || 0
-    const availableWidth = containerWidth > 0 ? containerWidth : windowWidth // No padding subtraction
+    // Use full width - account for header height in available space calculation
+    const headerHeight = 40 // Approximate header height
+    const availableHeight = (container?.clientHeight || window.innerHeight) - headerHeight
+    const availableWidth = containerWidth > 0 ? containerWidth : windowWidth // Full width, no padding
     
     // Calculate scale to fit page WIDTH of screen exactly
     const scaleX = Math.max(0.01, availableWidth / defaultViewport.width) // Ensure minimum scale
