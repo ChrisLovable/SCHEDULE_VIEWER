@@ -173,9 +173,11 @@ function PDFViewer({ employeeId, pdfPath = '/INDIVIDUAL_SCHEDULES.PDF' }) {
     const availableHeight = (container?.clientHeight || window.innerHeight) - 120 // Account for header and padding
     
     // Calculate scale to fit page in viewport (fit to width or height, whichever is smaller)
+    // Make it 20% smaller initially to ensure it fits comfortably and can zoom out further
     const scaleX = availableWidth / defaultViewport.width
     const scaleY = availableHeight / defaultViewport.height
-    const fitScale = Math.min(scaleX, scaleY, 1.0) // Fit to viewport, max 1:1 (can zoom in later)
+    const rawFitScale = Math.min(scaleX, scaleY)
+    const fitScale = rawFitScale * 0.8 // Make it 80% of fit size so there's room to zoom out more
     
     // Render at high quality (3x for crisp text when zoomed in)
     const renderScale = 3.0
