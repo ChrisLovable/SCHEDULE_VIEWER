@@ -80,7 +80,7 @@
 
 .canvas-wrapper {
   width: 100%;
-  overflow: auto; /* Allow scrolling when zoomed - works with pan */
+  overflow: auto; /* Allow scrolling when zoomed - works with native zoom */
   background: #1a1a1a;
   display: flex;
   justify-content: center;
@@ -88,19 +88,9 @@
   padding: 0.5rem;
   max-height: calc(100vh - 220px);
   -webkit-overflow-scrolling: touch;
-  touch-action: pan-x pan-y pinch-zoom; /* Enable native pan and pinch */
+  touch-action: pan-x pan-y pinch-zoom; /* Allow native pinch-to-zoom and pan */
   position: relative;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-/* When zoomed in, enable grab cursor */
-.canvas-wrapper.draggable {
-  cursor: grab;
-}
-
-.canvas-wrapper.draggable:active {
-  cursor: grabbing;
+  /* Allow text selection for accessibility, but can still zoom */
 }
 
 .pdf-canvas {
@@ -109,11 +99,10 @@
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
   background: white;
   display: block;
-  touch-action: none;
+  touch-action: pan-x pan-y pinch-zoom; /* Allow native pinch-to-zoom and pan */
   filter: brightness(0.95) contrast(1.05);
-  user-select: none;
-  -webkit-user-select: none;
-  pointer-events: auto; /* Allow canvas to receive events */
+  /* Allow native zoom gestures */
+  pointer-events: auto;
 }
 
 /* All Pages View Styles */
@@ -130,21 +119,11 @@
   background: #1a1a1a;
   padding: 0.5rem;
   -webkit-overflow-scrolling: touch;
-  touch-action: pan-x pan-y pinch-zoom; /* Enable native pan and pinch */
+  touch-action: pan-x pan-y pinch-zoom; /* Allow native pinch-to-zoom and pan */
   min-height: 100%;
   width: 100%;
   position: relative;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-/* When zoomed, make it easier to pan */
-.all-pages-wrapper[style*="scale"] {
-  cursor: grab;
-}
-
-.all-pages-wrapper[style*="scale"]:active {
-  cursor: grabbing;
+  /* Allow native zoom gestures */
 }
 
 .page-wrapper {
@@ -193,52 +172,13 @@
   margin-left: 0.5rem;
 }
 
-/* Zoom Controls */
-.zoom-controls {
+/* Native Zoom Hint */
+.native-zoom-hint {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  background: rgba(20, 20, 30, 0.8);
   padding: 0.25rem 0.5rem;
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.zoom-btn {
-  background: rgba(102, 126, 234, 0.8);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  width: 32px;
-  height: 32px;
-  font-size: 1.2rem;
-  font-weight: bold;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s, transform 0.1s;
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-  min-height: 44px; /* Minimum touch target */
-  min-width: 44px;
-}
-
-.zoom-btn:hover {
-  background: rgba(102, 126, 234, 1);
-}
-
-.zoom-btn:active {
-  transform: scale(0.95);
-  background: rgba(85, 105, 200, 1);
-}
-
-.zoom-level {
-  color: #e0e0e0;
-  font-size: 0.85rem;
-  font-weight: 600;
-  min-width: 45px;
-  text-align: center;
+  font-size: 0.75rem;
+  color: #888;
 }
 
 .page-wrapper .canvas-wrapper {
@@ -250,6 +190,7 @@
 .page-wrapper .pdf-canvas {
   width: 100%;
   height: auto;
+  touch-action: pan-x pan-y pinch-zoom; /* Allow native pinch-to-zoom and pan */
 }
 
 /* Tablet and Desktop Styles */
@@ -318,26 +259,10 @@
   .page-wrapper .canvas-wrapper {
     padding: 1rem;
   }
-
-  .zoom-controls {
-    padding: 0.5rem 0.75rem;
-  }
-
-  .zoom-btn {
-    min-height: 36px;
-    min-width: 36px;
-    font-size: 1.1rem;
-  }
 }
 
-/* Mobile zoom controls */
+/* Mobile styles */
 @media (max-width: 640px) {
-  .zoom-controls {
-    width: 100%;
-    justify-content: center;
-    margin-top: 0.5rem;
-  }
-
   .pdf-header {
     flex-direction: column;
     align-items: flex-start;

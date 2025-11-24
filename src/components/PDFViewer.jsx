@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import * as pdfjsLib from 'pdfjs-dist'
 import PDFPage from './PDFPage'
 import './PDFViewer.css'
@@ -19,10 +19,6 @@ function PDFViewer({ employeeId, pdfPath = '/INDIVIDUAL_SCHEDULES.PDF' }) {
   const [totalPages, setTotalPages] = useState(0)
   const [loadedPageNumbers, setLoadedPageNumbers] = useState(new Set([1, 2, 3, 4, 5]))
   const containerRef = useRef(null)
-  const [zoomLevel, setZoomLevel] = useState(1.0)
-  const [panPosition, setPanPosition] = useState({ x: 0, y: 0 })
-  const [isDragging, setIsDragging] = useState(false)
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
   const wrapperRef = useRef(null)
 
   useEffect(() => {
@@ -33,8 +29,6 @@ function PDFViewer({ employeeId, pdfPath = '/INDIVIDUAL_SCHEDULES.PDF' }) {
     setRenderedPages(0)
     setTotalPages(0)
     setLoadedPageNumbers(new Set())
-    setZoomLevel(1.0)
-    setPanPosition({ x: 0, y: 0 })
     setError(null)
     
     loadPDF(pdfPath)
@@ -52,13 +46,11 @@ function PDFViewer({ employeeId, pdfPath = '/INDIVIDUAL_SCHEDULES.PDF' }) {
         setSearching(false) // Don't block - show pages immediately as they render
         setError(null)
         setLoadedPageNumbers(new Set([1, 2, 3, 4, 5])) // Only load first 5 initially
-        setZoomLevel(1.0) // Reset zoom
       } else {
         setShowAllPages(false)
         setRenderedPages(0)
         setTotalPages(0)
         setLoadedPageNumbers(new Set())
-        setZoomLevel(1.0) // Reset zoom
         searchForEmployee()
       }
     }
@@ -170,23 +162,33 @@ function PDFViewer({ employeeId, pdfPath = '/INDIVIDUAL_SCHEDULES.PDF' }) {
   const renderPage = async (page, canvas, pageNum = null) => {
     if (!canvas) return
 
-    // AGGRESSIVE optimization - very low scale for MUCH faster rendering
+    // Maximum quality rendering - use device pixel ratio for crisp rendering
+    const devicePixelRatio = window.devicePixelRatio || 1
     const isMobile = window.innerWidth < 640
-    const baseScale = isMobile ? 0.6 : 0.7 // Much lower scale = MUCH faster
+    const baseScale = isMobile ? 2.5 : 3.0 // Maximum scale for highest quality
     
     const viewport = page.getViewport({ scale: baseScale })
-    canvas.width = viewport.width
-    canvas.height = viewport.height
-
-    const context = canvas.getContext('2d', { alpha: false, desynchronized: true })
     
-    // Optimize canvas rendering performance
-    context.imageSmoothingEnabled = false
-    context.imageSmoothingQuality = 'low'
+    // Set canvas internal size (higher resolution for high-DPI displays)
+    canvas.width = viewport.width * devicePixelRatio
+    canvas.height = viewport.height * devicePixelRatio
+    
+    // Set canvas display size (actual visible size)
+    canvas.style.width = `${viewport.width}px`
+    canvas.style.height = `${viewport.height}px`
+
+    const context = canvas.getContext('2d', { alpha: false })
+    
+    // Enable high-quality image smoothing for crisp text
+    context.imageSmoothingEnabled = true
+    context.imageSmoothingQuality = 'high'
+    
+    // Scale the context to account for device pixel ratio
+    context.scale(devicePixelRatio, devicePixelRatio)
 
     const renderContext = {
       canvasContext: context,
-      viewport: viewport,
+      viewport: viewport, // Use the base scale viewport
       enableWebGL: false,
     }
 
@@ -202,104 +204,6 @@ function PDFViewer({ employeeId, pdfPath = '/INDIVIDUAL_SCHEDULES.PDF' }) {
       return newCount
     })
   }
-
-  const handleZoomIn = () => {
-    setZoomLevel(prev => Math.min(prev + 0.25, 3.0))
-  }
-
-  const handleZoomOut = () => {
-    setZoomLevel(prev => Math.max(prev - 0.25, 0.5))
-  }
-
-  const handleZoomReset = () => {
-    setZoomLevel(1.0)
-  }
-
-  // Mouse wheel zoom (Ctrl/Cmd + scroll)
-  useEffect(() => {
-    const container = containerRef.current || wrapperRef.current
-    if (!container) return
-
-    const handleWheel = (e) => {
-      if (e.ctrlKey || e.metaKey) {
-        e.preventDefault()
-        const delta = e.deltaY > 0 ? -0.1 : 0.1
-        setZoomLevel(prev => {
-          const newZoom = Math.min(Math.max(prev + delta, 0.5), 3.0)
-          return newZoom
-        })
-      }
-    }
-
-    container.addEventListener('wheel', handleWheel, { passive: false })
-    return () => container.removeEventListener('wheel', handleWheel)
-  }, [])
-
-  // Pan/Drag functionality for zoomed content
-  const handleMouseMove = useCallback((e) => {
-    if (isDragging && zoomLevel > 1.0) {
-      setPanPosition({
-        x: e.clientX - dragStart.x,
-        y: e.clientY - dragStart.y
-      })
-    }
-  }, [isDragging, dragStart, zoomLevel])
-
-  const handleMouseUp = useCallback(() => {
-    setIsDragging(false)
-  }, [])
-
-  const handleMouseDown = useCallback((e) => {
-    if (zoomLevel > 1.0 && e.button === 0) { // Left mouse button only
-      e.preventDefault()
-      setIsDragging(true)
-      setDragStart({ x: e.clientX - panPosition.x, y: e.clientY - panPosition.y })
-    }
-  }, [zoomLevel, panPosition])
-
-  // Touch drag for mobile
-  const handleTouchStart = useCallback((e) => {
-    if (zoomLevel > 1.0 && e.touches.length === 1) {
-      const touch = e.touches[0]
-      setIsDragging(true)
-      setDragStart({ x: touch.clientX - panPosition.x, y: touch.clientY - panPosition.y })
-    }
-  }, [zoomLevel, panPosition])
-
-  const handleTouchMove = useCallback((e) => {
-    if (isDragging && zoomLevel > 1.0 && e.touches.length === 1) {
-      e.preventDefault()
-      const touch = e.touches[0]
-      setPanPosition({
-        x: touch.clientX - dragStart.x,
-        y: touch.clientY - dragStart.y
-      })
-    }
-  }, [isDragging, dragStart, zoomLevel])
-
-  const handleTouchEnd = useCallback(() => {
-    setIsDragging(false)
-  }, [])
-
-  // Reset pan when zoom resets
-  useEffect(() => {
-    if (zoomLevel <= 1.0) {
-      setPanPosition({ x: 0, y: 0 })
-      setIsDragging(false)
-    }
-  }, [zoomLevel])
-
-  // Global mouse events for dragging
-  useEffect(() => {
-    if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove)
-      document.addEventListener('mouseup', handleMouseUp)
-      return () => {
-        document.removeEventListener('mousemove', handleMouseMove)
-        document.removeEventListener('mouseup', handleMouseUp)
-      }
-    }
-  }, [isDragging, handleMouseMove, handleMouseUp])
 
   if (loading) {
     return (
@@ -343,11 +247,8 @@ function PDFViewer({ employeeId, pdfPath = '/INDIVIDUAL_SCHEDULES.PDF' }) {
                   <span className="loading-status"> - {loadedPageNumbers.size} pages ready</span>
                 )}
               </span>
-              <div className="zoom-controls">
-                <button onClick={handleZoomOut} className="zoom-btn" title="Zoom Out">−</button>
-                <span className="zoom-level">{Math.round(zoomLevel * 100)}%</span>
-                <button onClick={handleZoomIn} className="zoom-btn" title="Zoom In">+</button>
-                <button onClick={handleZoomReset} className="zoom-btn" title="Reset Zoom">⌂</button>
+              <div className="native-zoom-hint">
+                <span style={{ fontSize: '0.75rem', color: '#888' }}>Pinch to zoom • Drag to pan</span>
               </div>
             </div>
           </div>
@@ -355,16 +256,6 @@ function PDFViewer({ employeeId, pdfPath = '/INDIVIDUAL_SCHEDULES.PDF' }) {
             ref={containerRef}
             className="all-pages-wrapper" 
             id="pages-container"
-            style={{ 
-              transform: zoomLevel > 1.0
-                ? `scale(${zoomLevel}) translate(${panPosition.x / zoomLevel}px, ${panPosition.y / zoomLevel}px)`
-                : `scale(${zoomLevel})`,
-              transformOrigin: 'top center'
-            }}
-            onMouseDown={zoomLevel > 1.0 ? handleMouseDown : undefined}
-            onTouchStart={zoomLevel > 1.0 ? handleTouchStart : undefined}
-            onTouchMove={zoomLevel > 1.0 ? handleTouchMove : undefined}
-            onTouchEnd={zoomLevel > 1.0 ? handleTouchEnd : undefined}
           >
             {/* Only render pages that are in loadedPageNumbers */}
             {Array.from({ length: pdf.numPages }, (_, i) => i + 1).map((pageNum) => {
@@ -415,27 +306,14 @@ function PDFViewer({ employeeId, pdfPath = '/INDIVIDUAL_SCHEDULES.PDF' }) {
           <div className="pdf-header">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
               <span className="page-info">Employee ID: {employeeId} | Page {pageNumber}</span>
-              <div className="zoom-controls">
-                <button onClick={handleZoomOut} className="zoom-btn" title="Zoom Out">−</button>
-                <span className="zoom-level">{Math.round(zoomLevel * 100)}%</span>
-                <button onClick={handleZoomIn} className="zoom-btn" title="Zoom In">+</button>
-                <button onClick={handleZoomReset} className="zoom-btn" title="Reset Zoom">⌂</button>
+              <div className="native-zoom-hint">
+                <span style={{ fontSize: '0.75rem', color: '#888' }}>Pinch to zoom • Drag to pan</span>
               </div>
             </div>
           </div>
           <div 
             ref={wrapperRef}
-            className={`canvas-wrapper ${zoomLevel > 1.0 ? 'draggable' : ''}`}
-            style={{ 
-              transform: zoomLevel > 1.0 
-                ? `scale(${zoomLevel}) translate(${panPosition.x / zoomLevel}px, ${panPosition.y / zoomLevel}px)`
-                : `scale(${zoomLevel})`,
-              transformOrigin: 'top center'
-            }}
-            onMouseDown={zoomLevel > 1.0 ? handleMouseDown : undefined}
-            onTouchStart={zoomLevel > 1.0 ? handleTouchStart : undefined}
-            onTouchMove={zoomLevel > 1.0 ? handleTouchMove : undefined}
-            onTouchEnd={zoomLevel > 1.0 ? handleTouchEnd : undefined}
+            className="canvas-wrapper"
           >
             <canvas ref={canvasRef} className="pdf-canvas"></canvas>
           </div>

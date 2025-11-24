@@ -61,22 +61,33 @@ function PDFPage({ pdf, pageNum, onRendered }) {
             return
           }
 
-          // AGGRESSIVE optimization - very low scale for MUCH faster rendering
+          // Maximum quality rendering - use device pixel ratio for crisp rendering
+          const devicePixelRatio = window.devicePixelRatio || 1
           const isMobile = window.innerWidth < 640
-          const baseScale = isMobile ? 0.6 : 0.7 // Much lower scale = MUCH faster rendering
+          const baseScale = isMobile ? 2.5 : 3.0 // Maximum scale for highest quality
           
           const viewport = page.getViewport({ scale: baseScale })
-          canvas.width = viewport.width
-          canvas.height = viewport.height
-
-          const context = canvas.getContext('2d', { alpha: false, desynchronized: true })
           
-          // Maximize performance - disable smoothing for speed
-          context.imageSmoothingEnabled = false // Faster rendering
+          // Set canvas internal size (higher resolution for high-DPI displays)
+          canvas.width = viewport.width * devicePixelRatio
+          canvas.height = viewport.height * devicePixelRatio
+          
+          // Set canvas display size (actual visible size)
+          canvas.style.width = `${viewport.width}px`
+          canvas.style.height = `${viewport.height}px`
+
+          const context = canvas.getContext('2d', { alpha: false })
+          
+          // Enable high-quality image smoothing for crisp text
+          context.imageSmoothingEnabled = true
+          context.imageSmoothingQuality = 'high'
+          
+          // Scale the context to account for device pixel ratio
+          context.scale(devicePixelRatio, devicePixelRatio)
           
           const renderContext = {
             canvasContext: context,
-            viewport: viewport,
+            viewport: viewport, // Use the base scale viewport
             enableWebGL: false,
             renderInteractiveForms: false,
           }
