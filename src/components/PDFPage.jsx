@@ -61,18 +61,15 @@ function PDFPage({ pdf, pageNum, onRendered }) {
             return
           }
 
-          // Maximum quality rendering - use device pixel ratio for crisp rendering
-          const devicePixelRatio = window.devicePixelRatio || 1
+          // Maximum quality rendering - high scale for crisp text
           const isMobile = window.innerWidth < 640
-          const baseScale = isMobile ? 2.5 : 3.0 // Maximum scale for highest quality
+          const scale = isMobile ? 2.5 : 3.0 // Maximum scale for highest quality
           
-          const viewport = page.getViewport({ scale: baseScale })
+          const viewport = page.getViewport({ scale: scale })
           
-          // Set canvas internal size (higher resolution for high-DPI displays)
-          canvas.width = viewport.width * devicePixelRatio
-          canvas.height = viewport.height * devicePixelRatio
-          
-          // Set canvas display size (actual visible size)
+          // Set canvas size to match viewport exactly (no stretching)
+          canvas.width = viewport.width
+          canvas.height = viewport.height
           canvas.style.width = `${viewport.width}px`
           canvas.style.height = `${viewport.height}px`
 
@@ -82,12 +79,9 @@ function PDFPage({ pdf, pageNum, onRendered }) {
           context.imageSmoothingEnabled = true
           context.imageSmoothingQuality = 'high'
           
-          // Scale the context to account for device pixel ratio
-          context.scale(devicePixelRatio, devicePixelRatio)
-          
           const renderContext = {
             canvasContext: context,
-            viewport: viewport, // Use the base scale viewport
+            viewport: viewport,
             enableWebGL: false,
             renderInteractiveForms: false,
           }

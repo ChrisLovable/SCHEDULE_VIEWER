@@ -162,20 +162,33 @@ function PDFViewer({ employeeId, pdfPath = '/INDIVIDUAL_SCHEDULES.PDF' }) {
   const renderPage = async (page, canvas, pageNum = null) => {
     if (!canvas) return
 
-    // Maximum quality rendering - use device pixel ratio for crisp rendering
-    const devicePixelRatio = window.devicePixelRatio || 1
-    const isMobile = window.innerWidth < 640
-    const baseScale = isMobile ? 2.5 : 3.0 // Maximum scale for highest quality
+    // Get default viewport to calculate available space
+    const defaultViewport = page.getViewport({ scale: 1.0 })
     
-    const viewport = page.getViewport({ scale: baseScale })
+    // Wait a moment for layout to settle
+    await new Promise(resolve => setTimeout(resolve, 50))
     
-    // Set canvas internal size (higher resolution for high-DPI displays)
-    canvas.width = viewport.width * devicePixelRatio
-    canvas.height = viewport.height * devicePixelRatio
+    const container = wrapperRef.current
+    const availableWidth = (container?.clientWidth || window.innerWidth) - 32 // Account for padding
+    const availableHeight = (container?.clientHeight || window.innerHeight) - 120 // Account for header and padding
     
-    // Set canvas display size (actual visible size)
-    canvas.style.width = `${viewport.width}px`
-    canvas.style.height = `${viewport.height}px`
+    // Calculate scale to fit page in viewport (fit to width or height, whichever is smaller)
+    const scaleX = availableWidth / defaultViewport.width
+    const scaleY = availableHeight / defaultViewport.height
+    const fitScale = Math.min(scaleX, scaleY, 1.0) // Fit to viewport, max 1:1 (can zoom in later)
+    
+    // Render at high quality (3x for crisp text when zoomed in)
+    const renderScale = 3.0
+    
+    const renderViewport = page.getViewport({ scale: renderScale })
+    
+    // Set canvas internal size (high resolution for quality)
+    canvas.width = renderViewport.width
+    canvas.height = renderViewport.height
+    
+    // Set canvas display size (fit to screen initially, can zoom out much further with native zoom)
+    canvas.style.width = `${defaultViewport.width * fitScale}px`
+    canvas.style.height = `${defaultViewport.height * fitScale}px`
 
     const context = canvas.getContext('2d', { alpha: false })
     
@@ -183,12 +196,13 @@ function PDFViewer({ employeeId, pdfPath = '/INDIVIDUAL_SCHEDULES.PDF' }) {
     context.imageSmoothingEnabled = true
     context.imageSmoothingQuality = 'high'
     
-    // Scale the context to account for device pixel ratio
-    context.scale(devicePixelRatio, devicePixelRatio)
+    // Scale the context to map the render scale to the display scale
+    const scaleRatio = fitScale / renderScale
+    context.scale(scaleRatio, scaleRatio)
 
     const renderContext = {
       canvasContext: context,
-      viewport: viewport, // Use the base scale viewport
+      viewport: renderViewport,
       enableWebGL: false,
     }
 
