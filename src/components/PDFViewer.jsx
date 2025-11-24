@@ -169,15 +169,13 @@ function PDFViewer({ employeeId, pdfPath = '/INDIVIDUAL_SCHEDULES.PDF' }) {
     await new Promise(resolve => setTimeout(resolve, 50))
     
     const container = wrapperRef.current
-    const availableWidth = (container?.clientWidth || window.innerWidth) - 32 // Account for padding
-    const availableHeight = (container?.clientHeight || window.innerHeight) - 120 // Account for header and padding
+    // Get full available width (account for padding)
+    const availableWidth = (container?.clientWidth || window.innerWidth) - 16 // Minimal padding
     
-    // Calculate scale to fit page in viewport (fit to width or height, whichever is smaller)
-    // Make it 20% smaller initially to ensure it fits comfortably and can zoom out further
+    // Calculate scale to fit page WIDTH of screen (always fit to width, not height)
     const scaleX = availableWidth / defaultViewport.width
-    const scaleY = availableHeight / defaultViewport.height
-    const rawFitScale = Math.min(scaleX, scaleY)
-    const fitScale = rawFitScale * 0.8 // Make it 80% of fit size so there's room to zoom out more
+    // Use 95% to ensure it fits comfortably with a bit of margin
+    const fitScale = scaleX * 0.95
     
     // Render at high quality (3x for crisp text when zoomed in)
     const renderScale = 3.0
