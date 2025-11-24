@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create PWA Icons</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #f5f5f5; }
+        .instructions { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        canvas { border: 2px solid #ddd; margin: 10px; display: block; }
+        .download { margin-top: 10px; }
+        button { padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        button:hover { background: #5568d3; }
+    </style>
+</head>
+<body>
+    <div class="instructions">
+        <h2>📱 Create PWA Icons for Schedule Viewer</h2>
+        <ol>
+            <li>Right-click each canvas below</li>
+            <li>Select "Save image as..."</li>
+            <li>Save as <code>icon-192.png</code> and <code>icon-512.png</code></li>
+            <li>Place both files in the <code>public</code> folder</li>
+        </ol>
+        <p><strong>Note:</strong> The app works without icons - they're just for the home screen icon.</p>
+    </div>
+
+    <canvas id="icon192" width="192" height="192"></canvas>
+    <div class="download">
+        <button onclick="downloadIcon('icon192', 'icon-192.png')">Download icon-192.png</button>
+    </div>
+
+    <canvas id="icon512" width="512" height="512"></canvas>
+    <div class="download">
+        <button onclick="downloadIcon('icon512', 'icon-512.png')">Download icon-512.png</button>
+    </div>
+
+    <script>
+        function createIcon(canvas, size) {
+            const ctx = canvas.getContext('2d');
+            
+            // Gradient background
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#667eea');
+            gradient.addColorStop(1, '#764ba2');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+            
+            // White text "SV"
+            ctx.fillStyle = 'white';
+            ctx.font = `bold ${Math.floor(size * 0.3)}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('SV', size / 2, size / 2);
+        }
+        
+        function downloadIcon(canvasId, filename) {
+            const canvas = document.getElementById(canvasId);
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        // Create icons
+        createIcon(document.getElementById('icon192'), 192);
+        createIcon(document.getElementById('icon512'), 512);
+    </script>
+</body>
+</html>
+

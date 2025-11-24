@@ -1,0 +1,345 @@
+/* Mobile-First Base Styles */
+.pdf-viewer {
+  width: 100%;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  color: white;
+}
+
+.loading p {
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error-message {
+  background: rgba(220, 53, 69, 0.9);
+  color: white;
+  padding: 1rem;
+  border-radius: 12px;
+  text-align: center;
+  width: 100%;
+  margin: 0 1rem;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.error-message p {
+  font-size: 0.95rem;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.pdf-container {
+  width: 100%;
+  background: rgba(25, 25, 35, 0.95);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.pdf-header {
+  background: rgba(20, 20, 30, 0.95);
+  padding: 0.75rem;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+}
+
+.page-info {
+  font-weight: 600;
+  color: #e0e0e0;
+  font-size: 0.8rem;
+  word-break: break-word;
+}
+
+.canvas-wrapper {
+  width: 100%;
+  overflow: auto; /* Allow scrolling when zoomed - works with pan */
+  background: #1a1a1a;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 0.5rem;
+  max-height: calc(100vh - 220px);
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y pinch-zoom; /* Enable native pan and pinch */
+  position: relative;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* When zoomed in, enable grab cursor */
+.canvas-wrapper.draggable {
+  cursor: grab;
+}
+
+.canvas-wrapper.draggable:active {
+  cursor: grabbing;
+}
+
+.pdf-canvas {
+  max-width: 100%;
+  height: auto;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+  background: white;
+  display: block;
+  touch-action: none;
+  filter: brightness(0.95) contrast(1.05);
+  user-select: none;
+  -webkit-user-select: none;
+  pointer-events: auto; /* Allow canvas to receive events */
+}
+
+/* All Pages View Styles */
+.all-pages-container {
+  max-height: calc(100vh - 200px);
+  display: flex;
+  flex-direction: column;
+}
+
+.all-pages-wrapper {
+  overflow-y: auto;
+  overflow-x: auto;
+  flex: 1;
+  background: #1a1a1a;
+  padding: 0.5rem;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y pinch-zoom; /* Enable native pan and pinch */
+  min-height: 100%;
+  width: 100%;
+  position: relative;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* When zoomed, make it easier to pan */
+.all-pages-wrapper[style*="scale"] {
+  cursor: grab;
+}
+
+.all-pages-wrapper[style*="scale"]:active {
+  cursor: grabbing;
+}
+
+.page-wrapper {
+  margin-bottom: 1.5rem;
+  background: rgba(25, 25, 35, 0.95);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.page-wrapper:last-child {
+  margin-bottom: 0.5rem;
+}
+
+.page-header {
+  background: rgba(20, 20, 30, 0.95);
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+}
+
+.page-number {
+  font-weight: 600;
+  color: #7c8ff0;
+  font-size: 0.85rem;
+}
+
+.page-loading {
+  font-size: 0.75rem;
+  color: #888;
+  margin-left: 0.5rem;
+  font-weight: normal;
+}
+
+.loading-progress {
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  opacity: 0.8;
+}
+
+.loading-status {
+  font-size: 0.85rem;
+  font-weight: normal;
+  color: #7c8ff0;
+  margin-left: 0.5rem;
+}
+
+/* Zoom Controls */
+.zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(20, 20, 30, 0.8);
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.zoom-btn {
+  background: rgba(102, 126, 234, 0.8);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  width: 32px;
+  height: 32px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, transform 0.1s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 44px; /* Minimum touch target */
+  min-width: 44px;
+}
+
+.zoom-btn:hover {
+  background: rgba(102, 126, 234, 1);
+}
+
+.zoom-btn:active {
+  transform: scale(0.95);
+  background: rgba(85, 105, 200, 1);
+}
+
+.zoom-level {
+  color: #e0e0e0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  min-width: 45px;
+  text-align: center;
+}
+
+.page-wrapper .canvas-wrapper {
+  padding: 0.5rem;
+  max-height: none;
+  background: #1a1a1a;
+}
+
+.page-wrapper .pdf-canvas {
+  width: 100%;
+  height: auto;
+}
+
+/* Tablet and Desktop Styles */
+@media (min-width: 640px) {
+  .pdf-viewer {
+    min-height: 400px;
+  }
+
+  .loading {
+    padding: 3rem;
+  }
+
+  .loading p {
+    font-size: 1rem;
+  }
+
+  .spinner {
+    width: 50px;
+    height: 50px;
+    border-width: 4px;
+  }
+
+  .error-message {
+    padding: 1.5rem;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .error-message p {
+    font-size: 1.1rem;
+  }
+
+  .pdf-header {
+    padding: 1rem;
+  }
+
+  .page-info {
+    font-size: 0.95rem;
+  }
+
+  .canvas-wrapper {
+    padding: 1rem;
+    max-height: calc(100vh - 300px);
+  }
+
+  .all-pages-container {
+    max-height: calc(100vh - 250px);
+  }
+
+  .all-pages-wrapper {
+    padding: 1rem;
+  }
+
+  .page-wrapper {
+    margin-bottom: 2rem;
+  }
+
+  .page-header {
+    padding: 0.75rem 1rem;
+  }
+
+  .page-number {
+    font-size: 0.95rem;
+  }
+
+  .page-wrapper .canvas-wrapper {
+    padding: 1rem;
+  }
+
+  .zoom-controls {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .zoom-btn {
+    min-height: 36px;
+    min-width: 36px;
+    font-size: 1.1rem;
+  }
+}
+
+/* Mobile zoom controls */
+@media (max-width: 640px) {
+  .zoom-controls {
+    width: 100%;
+    justify-content: center;
+    margin-top: 0.5rem;
+  }
+
+  .pdf-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
