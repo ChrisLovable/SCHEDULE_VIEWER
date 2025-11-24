@@ -90,15 +90,16 @@
   overflow: auto; /* Allow scrolling when zoomed - works with native zoom */
   background: #1a1a1a;
   display: flex;
-  justify-content: center;
+  justify-content: center; /* Center the canvas */
   align-items: flex-start;
-  padding: 0.25rem; /* Minimal padding to maximize available width */
+  padding: 0 !important; /* No padding - eliminate all white space */
+  margin: 0 !important; /* No margin */
   -webkit-overflow-scrolling: touch;
   touch-action: pan-x pan-y pinch-zoom; /* Allow native pinch-to-zoom and pan */
   position: relative;
   min-height: 0 !important; /* Allow shrinking */
   min-width: 0 !important; /* Allow shrinking */
-  /* Unlimited zoom out - no restrictions */
+  /* Zero white space - PDF fills full width */
 }
 
 .pdf-canvas {
@@ -107,14 +108,16 @@
   min-height: 0 !important;
   width: auto;
   height: auto;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
+  box-shadow: none !important; /* Remove shadow to eliminate visual space */
   background: white;
   display: block;
+  margin: 0 !important; /* No margin */
+  padding: 0 !important; /* No padding */
   touch-action: pan-x pan-y pinch-zoom; /* Allow native pinch-to-zoom and pan */
   filter: brightness(0.95) contrast(1.05);
   /* UNLIMITED zoom out - browser can scale this down to any size (0.01 = 1%) */
   pointer-events: auto;
-  transform-origin: top center;
+  transform-origin: top center; /* Center transform origin */
   /* Maintain aspect ratio - no stretching */
   object-fit: contain;
   image-rendering: -webkit-optimize-contrast;

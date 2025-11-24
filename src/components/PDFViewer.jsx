@@ -169,10 +169,10 @@ function PDFViewer({ employeeId, pdfPath = '/INDIVIDUAL_SCHEDULES.PDF' }) {
     await new Promise(resolve => setTimeout(resolve, 100))
     
     const container = wrapperRef.current
-    // Get full available width - prioritize container, fallback to window innerWidth
+    // Get full available width - use entire container width (no padding/margin)
     const containerWidth = container?.clientWidth || 0
     const windowWidth = window.innerWidth || 0
-    const availableWidth = (containerWidth > 0 ? containerWidth : windowWidth) - 4 // Minimal padding
+    const availableWidth = containerWidth > 0 ? containerWidth : windowWidth // No padding subtraction
     
     // Calculate scale to fit page WIDTH of screen exactly
     const scaleX = Math.max(0.01, availableWidth / defaultViewport.width) // Ensure minimum scale
