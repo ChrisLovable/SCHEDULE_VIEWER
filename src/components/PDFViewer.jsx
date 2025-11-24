@@ -169,18 +169,22 @@ function PDFViewer({ employeeId, pdfPath = '/INDIVIDUAL_SCHEDULES.PDF' }) {
     await new Promise(resolve => setTimeout(resolve, 100))
     
     const container = wrapperRef.current
-    // Get full available width - use entire container width (no padding/margin)
+    // Get full available dimensions
     const containerWidth = container?.clientWidth || 0
+    const containerHeight = container?.clientHeight || 0
     const windowWidth = window.innerWidth || 0
-    // Use full width - account for header height in available space calculation
-    const headerHeight = 40 // Approximate header height
-    const availableHeight = (container?.clientHeight || window.innerHeight) - headerHeight
-    const availableWidth = containerWidth > 0 ? containerWidth : windowWidth // Full width, no padding
+    const windowHeight = window.innerHeight || 0
     
-    // Calculate scale to fit page WIDTH of screen exactly
-    const scaleX = Math.max(0.01, availableWidth / defaultViewport.width) // Ensure minimum scale
-    // Use 99% to fit almost perfectly - user can zoom out infinitely if needed
-    const fitScale = scaleX * 0.99
+    // Calculate available space - account for header
+    const headerHeight = 35 // Minimal header height
+    const availableWidth = containerWidth > 0 ? containerWidth : windowWidth
+    const availableHeight = (containerHeight > 0 ? containerHeight : windowHeight) - headerHeight
+    
+    // Calculate scale to fit page HEIGHT of screen (fill vertical space)
+    const scaleX = availableWidth / defaultViewport.width
+    const scaleY = availableHeight / defaultViewport.height
+    // Fit to height - use the smaller scale to ensure it fits
+    const fitScale = Math.min(scaleX, scaleY) * 0.98 // 98% to ensure it fits with minimal margin
     
     // Render at fixed high quality for crisp text (3x scale)
     const renderScale = 3.0
