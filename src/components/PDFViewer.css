@@ -115,7 +115,10 @@
   /* UNLIMITED zoom out - browser can scale this down to any size (0.01 = 1%) */
   pointer-events: auto;
   transform-origin: top center;
-  /* No size restrictions - can scale to tiny size */
+  /* Maintain aspect ratio - no stretching */
+  object-fit: contain;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
 }
 
 /* All Pages View Styles */

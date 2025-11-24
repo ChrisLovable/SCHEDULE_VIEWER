@@ -179,18 +179,21 @@ function PDFViewer({ employeeId, pdfPath = '/INDIVIDUAL_SCHEDULES.PDF' }) {
     // Use 99% to fit almost perfectly - user can zoom out infinitely if needed
     const fitScale = scaleX * 0.99
     
-    // Render at high quality (3x for crisp text when zoomed in)
+    // Render at fixed high quality for crisp text (3x scale)
     const renderScale = 3.0
-    
     const renderViewport = page.getViewport({ scale: renderScale })
     
     // Set canvas internal size (high resolution for quality)
     canvas.width = renderViewport.width
     canvas.height = renderViewport.height
     
-    // Set canvas display size (fit to screen initially, can zoom out much further with native zoom)
-    canvas.style.width = `${defaultViewport.width * fitScale}px`
-    canvas.style.height = `${defaultViewport.height * fitScale}px`
+    // Calculate display dimensions - maintain aspect ratio by using same fitScale for both
+    const aspectRatio = defaultViewport.height / defaultViewport.width
+    const displayWidth = defaultViewport.width * fitScale
+    const displayHeight = displayWidth * aspectRatio // Maintain aspect ratio perfectly
+    
+    canvas.style.width = `${displayWidth}px`
+    canvas.style.height = `${displayHeight}px`
 
     const context = canvas.getContext('2d', { alpha: false })
     
@@ -198,7 +201,7 @@ function PDFViewer({ employeeId, pdfPath = '/INDIVIDUAL_SCHEDULES.PDF' }) {
     context.imageSmoothingEnabled = true
     context.imageSmoothingQuality = 'high'
     
-    // Scale the context to map the render scale to the display scale
+    // Scale the context uniformly to maintain aspect ratio
     const scaleRatio = fitScale / renderScale
     context.scale(scaleRatio, scaleRatio)
 
