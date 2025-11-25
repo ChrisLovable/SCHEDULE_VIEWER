@@ -341,15 +341,21 @@ function PDFViewer({ employeeId, pdfPath = '/INDIVIDUAL_SCHEDULES.PDF' }) {
       )}
 
       {!showAllPages && pageNumber && !error && (
-        <div className="pdf-container" style={{ position: 'fixed', inset: 0, zIndex: 0, backgroundColor: '#000' }}>
+        <div className="pdf-container all-pages-container">
           <div className="pdf-header">
             <span className="page-info">Employee ID: {employeeId} | Page {pageNumber}</span>
           </div>
           <div 
-            ref={wrapperRef}
-            className="canvas-wrapper"
+            ref={containerRef}
+            className="all-pages-wrapper" 
+            id="pages-container"
           >
-            <canvas ref={canvasRef} className="pdf-canvas"></canvas>
+            <PDFPage
+              key={pageNumber}
+              pdf={pdf}
+              pageNum={pageNumber}
+              onRendered={() => {}}
+            />
           </div>
         </div>
       )}
