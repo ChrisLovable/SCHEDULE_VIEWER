@@ -1,9 +1,10 @@
 /* Mobile-First Base Styles */
+/* CURRENT LOOK (to restore): background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); */
 .app {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  background: #ff0000; /* TEMPORARY RED - to verify changes applied */
   position: relative;
 }
 
@@ -36,11 +37,12 @@
   margin: 0 auto;
 }
 
+/* CURRENT LOOK (to restore): background: rgba(25, 25, 35, 0.95); */
 .search-box {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  background: rgba(25, 25, 35, 0.95);
+  background: rgba(200, 0, 0, 0.95); /* TEMPORARY RED - to verify changes applied */
   padding: 1rem;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
@@ -70,11 +72,12 @@
   background: rgba(25, 25, 35, 0.95);
 }
 
+/* CURRENT LOOK (to restore): background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
 .search-button {
   width: 100%;
   padding: 1rem;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: #ffff00 !important; /* TEMPORARY YELLOW - to verify changes applied */
+  color: black !important;
   border: none;
   border-radius: 8px;
   font-size: 1rem;
@@ -84,17 +87,19 @@
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   min-height: 44px; /* Minimum touch target size */
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 4px 15px rgba(255, 255, 0, 0.5) !important; /* Yellow shadow */
 }
 
 .search-button:hover {
   opacity: 0.9;
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 6px 20px rgba(255, 255, 0, 0.6) !important; /* Yellow shadow */
+  background: #ffff00 !important;
 }
 
 .search-button:active {
   transform: scale(0.98);
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 2px 8px rgba(255, 255, 0, 0.6) !important; /* Yellow shadow */
+  background: #ffff00 !important;
 }
 
 .viewer-container {
@@ -192,15 +197,19 @@
     width: auto;
     padding: 0.875rem 2rem;
     min-height: auto;
+    background: #ffff00 !important; /* TEMPORARY YELLOW */
+    color: black !important;
   }
 
   .search-button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 4px 12px rgba(255, 255, 0, 0.6) !important;
+    background: #ffff00 !important;
   }
 
   .search-button:active {
     transform: translateY(0);
+    background: #ffff00 !important;
   }
 
   .viewer-container {

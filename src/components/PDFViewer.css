@@ -1,14 +1,19 @@
 /* Mobile-First Base Styles */
 .pdf-viewer {
   width: 100% !important;
-  height: 100vh !important;
+  height: 100% !important;
   display: flex;
   flex-direction: column;
-  align-items: stretch; /* Stretch to fill width */
+  align-items: stretch;
   overflow: hidden;
-  background: #1a1a1a;
+  background: #000; /* Match body background */
   margin: 0 !important;
   padding: 0 !important;
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
 }
 
 .loading {
@@ -61,27 +66,34 @@
 
 .pdf-container {
   width: 100% !important;
-  height: 100% !important;
-  background: #1a1a1a;
+  height: 100dvh !important; /* Use dynamic viewport height for mobile browser chrome */
+  background: #000; /* Black background */
   border-radius: 0;
   box-shadow: none;
   border: none;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
   margin: 0 !important;
   padding: 0 !important;
+  position: fixed !important; /* Fixed positioning - pinned to full screen */
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  display: flex !important; /* Use flexbox layout */
+  flex-direction: column !important; /* Stack header and canvas vertically */
 }
 
 .pdf-header {
   background: rgba(20, 20, 30, 0.95);
-  padding: 0.15rem 0.5rem !important;
+  padding: 0.5rem 0.5rem !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   text-align: center;
-  flex-shrink: 0;
+  position: relative; /* Takes space in layout */
+  flex-shrink: 0; /* Don't shrink */
   margin: 0 !important;
-  min-height: 0;
-  line-height: 1.2;
+  line-height: 1.2 !important;
+  height: auto;
+  z-index: 10;
 }
 
 .page-info {
@@ -91,23 +103,29 @@
   word-break: break-word;
 }
 
-.canvas-wrapper {
+/* PDF.js viewer container - make it fill remaining space below header */
+.canvas-wrapper,
+#viewerContainer {
+  position: relative !important;
+  flex: 1 1 0 !important; /* Take all remaining space - zero flex basis */
   width: 100% !important;
-  flex: 1;
-  overflow: auto; /* Allow scrolling when zoomed - works with native zoom */
-  background: #1a1a1a;
-  display: flex;
-  justify-content: flex-start; /* Start from top-left, no centering space */
-  align-items: flex-start;
-  padding: 0 !important; /* No padding - eliminate all white space */
-  margin: 0 !important; /* No margin */
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-x pan-y pinch-zoom; /* Allow native pinch-to-zoom and pan */
-  position: relative;
-  min-height: 0 !important; /* Allow shrinking */
-  min-width: 0 !important; /* Allow shrinking */
   height: 100% !important;
-  /* Zero white space - PDF fills full width and height */
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: auto; /* Allow scrolling when zoomed */
+  background: #000;
+  display: flex !important; /* Use flex to position canvas */
+  align-items: flex-start !important; /* Start at top - no centering space */
+  justify-content: center !important; /* Center horizontally only */
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x pan-y pinch-zoom;
+  min-height: 0 !important; /* Allow shrinking */
+  overflow-x: hidden !important; /* Prevent horizontal scrollbars */
+}
+
+/* Reduce page margins between pages to avoid big gaps */
+.page {
+  margin: 4px auto !important; /* Small gap, no huge white bars */
 }
 
 .pdf-canvas {
@@ -116,17 +134,19 @@
   min-height: 0 !important;
   width: auto;
   height: auto;
-  box-shadow: none !important; /* Remove shadow to eliminate visual space */
+  box-shadow: none !important;
   background: white;
-  display: block;
-  margin: 0 !important; /* No margin */
-  padding: 0 !important; /* No padding */
-  touch-action: pan-x pan-y pinch-zoom; /* Allow native pinch-to-zoom and pan */
+  display: block !important;
+  margin: 0 auto !important; /* Center horizontally, ZERO vertical margin */
+  padding: 0 !important;
+  border: 0 !important;
+  touch-action: pan-x pan-y pinch-zoom;
   filter: brightness(0.95) contrast(1.05);
-  /* UNLIMITED zoom out - browser can scale this down to any size (0.01 = 1%) */
   pointer-events: auto;
-  transform-origin: top center; /* Center transform origin */
-  /* Maintain aspect ratio - no stretching */
+  transform-origin: top center;
+  position: relative !important;
+  flex-shrink: 0 !important; /* Don't shrink in flex container */
+  /* Canvas fills available space - NO white space above or below */
   object-fit: contain;
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;

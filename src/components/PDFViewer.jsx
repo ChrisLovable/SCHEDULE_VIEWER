@@ -175,16 +175,21 @@ function PDFViewer({ employeeId, pdfPath = '/INDIVIDUAL_SCHEDULES.PDF' }) {
     const windowWidth = window.innerWidth || 0
     const windowHeight = window.innerHeight || 0
     
-    // Calculate available space - account for header
-    const headerHeight = 35 // Minimal header height
-    const availableWidth = containerWidth > 0 ? containerWidth : windowWidth
-    const availableHeight = (containerHeight > 0 ? containerHeight : windowHeight) - headerHeight
+    // Calculate available space - account for header height
+    const headerElement = container?.parentElement?.querySelector('.pdf-header')
+    const headerHeight = headerElement ? headerElement.getBoundingClientRect().height : 40
+    const availableWidth = windowWidth
+    const availableHeight = windowHeight - headerHeight // Subtract header height
     
-    // Calculate scale to fit page HEIGHT of screen (fill vertical space)
+    // Calculate scale to fit page HEIGHT of screen EXACTLY (fill vertical space completely)
     const scaleX = availableWidth / defaultViewport.width
     const scaleY = availableHeight / defaultViewport.height
-    // Fit to height - use the smaller scale to ensure it fits
-    const fitScale = Math.min(scaleX, scaleY) * 0.98 // 98% to ensure it fits with minimal margin
+    // Prioritize filling height - use scaleY to fill vertical space exactly
+    let fitScale = scaleY
+    // But ensure width fits too - if scaleY makes it too wide, scale down
+    if (defaultViewport.width * scaleY > availableWidth) {
+      fitScale = scaleX // Use width-based scale if height-based is too wide
+    }
     
     // Render at fixed high quality for crisp text (3x scale)
     const renderScale = 3.0
@@ -194,13 +199,25 @@ function PDFViewer({ employeeId, pdfPath = '/INDIVIDUAL_SCHEDULES.PDF' }) {
     canvas.width = renderViewport.width
     canvas.height = renderViewport.height
     
-    // Calculate display dimensions - maintain aspect ratio by using same fitScale for both
+    // Calculate display dimensions - FILL WIDTH to minimize white space
     const aspectRatio = defaultViewport.height / defaultViewport.width
-    const displayWidth = defaultViewport.width * fitScale
-    const displayHeight = displayWidth * aspectRatio // Maintain aspect ratio perfectly
+    
+    // Strategy: Fill full width (no side white space)
+    let displayWidth = availableWidth // Fill full width - eliminates side white space
+    let displayHeight = displayWidth * aspectRatio // Calculate height from width
+    
+    // Don't constrain height - let it be taller than viewport if needed
+    // This allows scrolling to bottom to show content
+    // If PDF is taller than screen, we'll scroll to bottom
+    // If PDF is shorter than screen, it will fit with minimal white space
     
     canvas.style.width = `${displayWidth}px`
     canvas.style.height = `${displayHeight}px`
+    canvas.style.display = 'block'
+    canvas.style.position = 'relative' // Relative positioning within flex container
+    canvas.style.margin = '0 auto' // Center horizontally, zero vertical margin
+    canvas.style.top = '0'
+    canvas.style.left = '0'
 
     const context = canvas.getContext('2d', { alpha: false })
     
@@ -209,7 +226,9 @@ function PDFViewer({ employeeId, pdfPath = '/INDIVIDUAL_SCHEDULES.PDF' }) {
     context.imageSmoothingQuality = 'high'
     
     // Scale the context uniformly to maintain aspect ratio
-    const scaleRatio = fitScale / renderScale
+    // Calculate fit scale based on actual display dimensions
+    const actualFitScale = displayHeight / defaultViewport.height
+    const scaleRatio = actualFitScale / renderScale
     context.scale(scaleRatio, scaleRatio)
 
     const renderContext = {
@@ -219,6 +238,24 @@ function PDFViewer({ employeeId, pdfPath = '/INDIVIDUAL_SCHEDULES.PDF' }) {
     }
 
     await page.render(renderContext).promise
+    
+    // Auto-scroll to BOTTOM after rendering
+    // This ensures white space (if any) is at the top, content is visible at bottom
+    setTimeout(() => {
+      if (wrapperRef.current) {
+        const scrollContainer = wrapperRef.current
+        // Scroll to absolute bottom
+        scrollContainer.scrollTop = scrollContainer.scrollHeight
+        
+        // If that didn't work, try scrolling the canvas itself
+        if (scrollContainer.scrollTop === 0 && canvas) {
+          const canvasBottom = canvas.offsetHeight - scrollContainer.clientHeight
+          if (canvasBottom > 0) {
+            scrollContainer.scrollTop = canvasBottom
+          }
+        }
+      }
+    }, 400) // Wait for everything to render
   }
 
   const handlePageRendered = () => {
@@ -264,7 +301,7 @@ function PDFViewer({ employeeId, pdfPath = '/INDIVIDUAL_SCHEDULES.PDF' }) {
       {showAllPages && !error && pdf && (
         <div className="pdf-container all-pages-container">
           <div className="pdf-header">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0' }}>
               <span className="page-info">
                 Showing All Pages ({pdf.numPages} total)
                 {pdfPath.includes('SITE') && <span> - Site Schedules</span>}
@@ -328,9 +365,9 @@ function PDFViewer({ employeeId, pdfPath = '/INDIVIDUAL_SCHEDULES.PDF' }) {
       )}
 
       {!showAllPages && pageNumber && !error && (
-        <div className="pdf-container">
+        <div className="pdf-container" style={{ position: 'fixed', inset: 0, zIndex: 0, backgroundColor: '#000' }}>
           <div className="pdf-header">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0' }}>
               <span className="page-info">Employee ID: {employeeId} | Page {pageNumber}</span>
               <div className="native-zoom-hint">
                 <span style={{ fontSize: '0.75rem', color: '#888' }}>Pinch to zoom • Drag to pan</span>
