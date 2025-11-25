@@ -36,18 +36,25 @@ function PDFPage({ pdf, pageNum, onRendered }) {
     }
   }, [])
 
-  // Only render first 3 pages immediately - much faster initial load
+  // Render first 5 pages immediately - much faster initial load
   useEffect(() => {
-    if (pageNum <= 3) {
+    if (pageNum <= 5) {
       setShouldRender(true)
     }
   }, [pageNum])
 
   useEffect(() => {
-    if (!pdf || !canvasRef.current || isRendered || !shouldRender) return
+    if (!pdf || !canvasRef.current || isRendered || !shouldRender) {
+      if (!pdf) console.log(`[PDFPage ${pageNum}] No PDF yet`)
+      if (!canvasRef.current) console.log(`[PDFPage ${pageNum}] No canvas ref yet`)
+      if (isRendered) console.log(`[PDFPage ${pageNum}] Already rendered`)
+      if (!shouldRender) console.log(`[PDFPage ${pageNum}] Should not render yet`)
+      return
+    }
 
     const renderPage = async () => {
       try {
+        console.log(`[PDFPage ${pageNum}] Starting render...`)
         setIsLoading(true)
         
         // Use requestIdleCallback only for pages beyond the first 5 (critical pages render immediately)
@@ -61,17 +68,42 @@ function PDFPage({ pdf, pageNum, onRendered }) {
             return
           }
 
-          // Maximum quality rendering - high scale for crisp text
-          const isMobile = window.innerWidth < 640
-          const scale = isMobile ? 2.5 : 3.0 // Maximum scale for highest quality
+          // Get container width to fit PDF to width
+          // Wait a moment for layout to settle
+          await new Promise(resolve => setTimeout(resolve, 100))
           
-          const viewport = page.getViewport({ scale: scale })
+          // Try multiple ways to get container width
+          let containerWidth = window.innerWidth
+          const pageWrapper = containerRef.current?.closest('.page-wrapper')
+          if (pageWrapper) {
+            const canvasWrapper = pageWrapper.querySelector('.canvas-wrapper')
+            if (canvasWrapper?.clientWidth) {
+              containerWidth = canvasWrapper.clientWidth
+            } else if (pageWrapper.clientWidth) {
+              containerWidth = pageWrapper.clientWidth
+            }
+          }
           
-          // Set canvas size to match viewport exactly (no stretching)
-          canvas.width = viewport.width
-          canvas.height = viewport.height
-          canvas.style.width = `${viewport.width}px`
-          canvas.style.height = `${viewport.height}px`
+          // Account for margins and padding (page-wrapper has 0.5rem margin on each side = 1rem total)
+          containerWidth = Math.max(containerWidth - 16, 300) // Minimum 300px width
+          
+          // Get default viewport to calculate scale
+          const defaultViewport = page.getViewport({ scale: 1.0 })
+          
+          // Calculate scale to fit container width
+          const scaleToFitWidth = containerWidth / defaultViewport.width
+          
+          // Render at high quality (3x the display scale for crisp text)
+          const renderScale = scaleToFitWidth * 3.0
+          const renderViewport = page.getViewport({ scale: renderScale })
+          
+          // Set canvas internal size (high resolution for quality)
+          canvas.width = renderViewport.width
+          canvas.height = renderViewport.height
+          
+          // Set display size to fit container width
+          canvas.style.width = `${containerWidth}px`
+          canvas.style.height = `${defaultViewport.height * scaleToFitWidth}px`
 
           const context = canvas.getContext('2d', { alpha: false })
           
@@ -81,32 +113,35 @@ function PDFPage({ pdf, pageNum, onRendered }) {
           
           const renderContext = {
             canvasContext: context,
-            viewport: viewport,
+            viewport: renderViewport,
             enableWebGL: false,
             renderInteractiveForms: false,
           }
 
           await page.render(renderContext).promise
+          console.log(`[PDFPage ${pageNum}] Render complete. Canvas size: ${canvas.width}x${canvas.height}, Display: ${canvas.style.width}x${canvas.style.height}`)
           setIsRendered(true)
           setIsLoading(false)
           if (onRendered) onRendered()
         }
         
         if (shouldDefer) {
+          console.log(`[PDFPage ${pageNum}] Deferring render with requestIdleCallback`)
           requestIdleCallback(() => {
             doRender().catch(err => {
-              console.error(`Error rendering page ${pageNum}:`, err)
+              console.error(`[PDFPage ${pageNum}] Error rendering page:`, err)
               setIsLoading(false)
             })
           }, { timeout: 2000 })
         } else {
+          console.log(`[PDFPage ${pageNum}] Rendering immediately`)
           doRender().catch(err => {
-            console.error(`Error rendering page ${pageNum}:`, err)
+            console.error(`[PDFPage ${pageNum}] Error rendering page:`, err)
             setIsLoading(false)
           })
         }
       } catch (err) {
-        console.error(`Error rendering page ${pageNum}:`, err)
+        console.error(`[PDFPage ${pageNum}] Error in renderPage:`, err)
         setIsLoading(false)
       }
     }
@@ -123,7 +158,26 @@ function PDFPage({ pdf, pageNum, onRendered }) {
         {!shouldRender && !isRendered && <span className="page-loading">(Waiting...)</span>}
       </div>
       <div className="canvas-wrapper">
-        {shouldRender && <canvas ref={canvasRef} className="pdf-canvas"></canvas>}
+        {shouldRender && (
+          <>
+            {isLoading && (
+              <div style={{ 
+                position: 'absolute', 
+                top: '50%', 
+                left: '50%', 
+                transform: 'translate(-50%, -50%)',
+                color: '#888',
+                fontSize: '0.9rem'
+              }}>
+                Loading page {pageNum}...
+              </div>
+            )}
+            <canvas ref={canvasRef} className="pdf-canvas" style={{ 
+              opacity: isRendered ? 1 : 0,
+              transition: 'opacity 0.3s'
+            }}></canvas>
+          </>
+        )}
         {!shouldRender && (
           <div className="canvas-placeholder" style={{ minHeight: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#1a1a1a' }}>
             <span style={{ color: '#666' }}>Page will load when scrolled into view...</span>

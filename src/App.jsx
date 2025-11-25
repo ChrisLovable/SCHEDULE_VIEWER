@@ -48,10 +48,6 @@ function App() {
         <>
           <header className="app-header">
             <h1>Schedule Viewer</h1>
-            <p className="subtitle">Enter Employee ID to view schedule</p>
-            <p className="subtitle" style={{ fontSize: '0.75rem', marginTop: '0.25rem', opacity: 0.8 }}>
-              Type "1111" for all Individual Schedules | "2222" for all Site Schedules
-            </p>
           </header>
 
           <div className="search-container">
@@ -69,14 +65,14 @@ function App() {
                 autoCapitalize="off"
                 autoCorrect="off"
               />
-              <button onClick={handleSearch} className="search-button">
+              <button 
+                onClick={handleSearch} 
+                className="search-button"
+              >
                 Search
               </button>
             </div>
-          </div>
-
-          <div className="placeholder">
-            <p>Enter an Employee ID number above to view their schedule</p>
+            <p className="subtitle" style={{ textAlign: 'center', marginTop: '0.75rem' }}>Enter Employee ID to view schedule</p>
           </div>
         </>
       )}

@@ -129,11 +129,11 @@
 }
 
 .pdf-canvas {
-  max-width: none !important;
+  max-width: 100% !important;
+  width: 100% !important;
   min-width: 0 !important;
   min-height: 0 !important;
-  width: auto;
-  height: auto;
+  height: auto !important;
   box-shadow: none !important;
   background: white;
   display: block !important;
@@ -146,7 +146,7 @@
   transform-origin: top center;
   position: relative !important;
   flex-shrink: 0 !important; /* Don't shrink in flex container */
-  /* Canvas fills available space - NO white space above or below */
+  /* Canvas fills available width - NO side white space */
   object-fit: contain;
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
@@ -167,10 +167,10 @@
 
 .all-pages-wrapper {
   overflow-y: auto;
-  overflow-x: auto;
+  overflow-x: hidden;
   flex: 1;
   background: #1a1a1a;
-  padding: 0.5rem;
+  padding: 0.5rem 0;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-x pan-y pinch-zoom; /* Allow native pinch-to-zoom and pan */
   width: 100%;
@@ -180,11 +180,15 @@
 
 .page-wrapper {
   margin-bottom: 1.5rem;
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
   background: rgba(25, 25, 35, 0.95);
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  width: calc(100% - 1rem);
+  max-width: 100%;
 }
 
 .page-wrapper:last-child {
@@ -234,14 +238,22 @@
 }
 
 .page-wrapper .canvas-wrapper {
-  padding: 0.5rem;
+  padding: 0;
   max-height: none;
+  max-width: 100%;
+  width: 100%;
   background: #1a1a1a;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  position: relative;
+  min-height: 400px;
 }
 
 .page-wrapper .pdf-canvas {
-  width: 100%;
-  height: auto;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
   touch-action: pan-x pan-y pinch-zoom; /* Allow native pinch-to-zoom and pan */
 }
 

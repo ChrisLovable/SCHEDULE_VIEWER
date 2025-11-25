@@ -39,6 +39,8 @@ function PDFViewer({ employeeId, pdfPath = '/INDIVIDUAL_SCHEDULES.PDF' }) {
     if (pdf && employeeId) {
       // Check for special codes - show all pages
       if (employeeId.trim() === '1111' || employeeId.trim() === '2222') {
+        console.log('[PDFViewer] Showing all pages for code:', employeeId.trim())
+        console.log('[PDFViewer] Total pages:', pdf.numPages)
         setShowAllPages(true)
         setAllPagesRendered(false)
         setRenderedPages(0)
@@ -46,6 +48,7 @@ function PDFViewer({ employeeId, pdfPath = '/INDIVIDUAL_SCHEDULES.PDF' }) {
         setSearching(false) // Don't block - show pages immediately as they render
         setError(null)
         setLoadedPageNumbers(new Set([1, 2, 3, 4, 5])) // Only load first 5 initially
+        console.log('[PDFViewer] Set loadedPageNumbers to first 5 pages')
       } else {
         setShowAllPages(false)
         setRenderedPages(0)
@@ -170,25 +173,23 @@ function PDFViewer({ employeeId, pdfPath = '/INDIVIDUAL_SCHEDULES.PDF' }) {
     
     const container = wrapperRef.current
     // Get full available dimensions
-    const containerWidth = container?.clientWidth || 0
-    const containerHeight = container?.clientHeight || 0
     const windowWidth = window.innerWidth || 0
     const windowHeight = window.innerHeight || 0
     
     // Calculate available space - account for header height
     const headerElement = container?.parentElement?.querySelector('.pdf-header')
     const headerHeight = headerElement ? headerElement.getBoundingClientRect().height : 40
-    const availableWidth = windowWidth
+    const availableWidth = windowWidth // Use full window width
     const availableHeight = windowHeight - headerHeight // Subtract header height
     
-    // Calculate scale to fit page HEIGHT of screen EXACTLY (fill vertical space completely)
+    // Calculate scale to fit page WIDTH of screen EXACTLY (fill horizontal space completely)
     const scaleX = availableWidth / defaultViewport.width
     const scaleY = availableHeight / defaultViewport.height
-    // Prioritize filling height - use scaleY to fill vertical space exactly
-    let fitScale = scaleY
-    // But ensure width fits too - if scaleY makes it too wide, scale down
-    if (defaultViewport.width * scaleY > availableWidth) {
-      fitScale = scaleX // Use width-based scale if height-based is too wide
+    // Prioritize filling width - use scaleX to fill horizontal space exactly
+    let fitScale = scaleX
+    // But ensure height fits too - if scaleX makes it too tall, scale down
+    if (defaultViewport.height * scaleX > availableHeight) {
+      fitScale = scaleY // Use height-based scale if width-based is too tall
     }
     
     // Render at fixed high quality for crisp text (3x scale)
@@ -211,13 +212,14 @@ function PDFViewer({ employeeId, pdfPath = '/INDIVIDUAL_SCHEDULES.PDF' }) {
     // If PDF is taller than screen, we'll scroll to bottom
     // If PDF is shorter than screen, it will fit with minimal white space
     
-    canvas.style.width = `${displayWidth}px`
+    canvas.style.width = '100%'
     canvas.style.height = `${displayHeight}px`
     canvas.style.display = 'block'
     canvas.style.position = 'relative' // Relative positioning within flex container
     canvas.style.margin = '0 auto' // Center horizontally, zero vertical margin
     canvas.style.top = '0'
     canvas.style.left = '0'
+    canvas.style.maxWidth = '100%'
 
     const context = canvas.getContext('2d', { alpha: false })
     
@@ -301,19 +303,14 @@ function PDFViewer({ employeeId, pdfPath = '/INDIVIDUAL_SCHEDULES.PDF' }) {
       {showAllPages && !error && pdf && (
         <div className="pdf-container all-pages-container">
           <div className="pdf-header">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0' }}>
-              <span className="page-info">
-                Showing All Pages ({pdf.numPages} total)
-                {pdfPath.includes('SITE') && <span> - Site Schedules</span>}
-                {pdfPath.includes('INDIVIDUAL') && <span> - Individual Schedules</span>}
-                {renderedPages > 0 && (
-                  <span className="loading-status"> - {loadedPageNumbers.size} pages ready</span>
-                )}
-              </span>
-              <div className="native-zoom-hint">
-                <span style={{ fontSize: '0.75rem', color: '#888' }}>Pinch to zoom • Drag to pan</span>
-              </div>
-            </div>
+            <span className="page-info">
+              Showing All Pages ({pdf.numPages} total)
+              {pdfPath.includes('SITE') && <span> - Site Schedules</span>}
+              {pdfPath.includes('INDIVIDUAL') && <span> - Individual Schedules</span>}
+              {renderedPages > 0 && (
+                <span className="loading-status"> - {loadedPageNumbers.size} pages ready</span>
+              )}
+            </span>
           </div>
           <div 
             ref={containerRef}
@@ -367,12 +364,7 @@ function PDFViewer({ employeeId, pdfPath = '/INDIVIDUAL_SCHEDULES.PDF' }) {
       {!showAllPages && pageNumber && !error && (
         <div className="pdf-container" style={{ position: 'fixed', inset: 0, zIndex: 0, backgroundColor: '#000' }}>
           <div className="pdf-header">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0' }}>
-              <span className="page-info">Employee ID: {employeeId} | Page {pageNumber}</span>
-              <div className="native-zoom-hint">
-                <span style={{ fontSize: '0.75rem', color: '#888' }}>Pinch to zoom • Drag to pan</span>
-              </div>
-            </div>
+            <span className="page-info">Employee ID: {employeeId} | Page {pageNumber}</span>
           </div>
           <div 
             ref={wrapperRef}
