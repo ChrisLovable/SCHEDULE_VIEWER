@@ -69,23 +69,29 @@ function PDFPage({ pdf, pageNum, onRendered }) {
           }
 
           // Get container width to fit PDF to width
-          // Wait a moment for layout to settle
-          await new Promise(resolve => setTimeout(resolve, 100))
+          // Wait longer for first page to ensure layout is ready
+          const waitTime = pageNum === 1 ? 200 : 100
+          await new Promise(resolve => setTimeout(resolve, waitTime))
           
           // Try multiple ways to get container width
           let containerWidth = window.innerWidth
           const pageWrapper = containerRef.current?.closest('.page-wrapper')
           if (pageWrapper) {
             const canvasWrapper = pageWrapper.querySelector('.canvas-wrapper')
-            if (canvasWrapper?.clientWidth) {
+            if (canvasWrapper?.clientWidth && canvasWrapper.clientWidth > 0) {
               containerWidth = canvasWrapper.clientWidth
-            } else if (pageWrapper.clientWidth) {
+            } else if (pageWrapper.clientWidth && pageWrapper.clientWidth > 0) {
               containerWidth = pageWrapper.clientWidth
             }
           }
           
           // Account for margins and padding (page-wrapper has 0.5rem margin on each side = 1rem total)
-          containerWidth = Math.max(containerWidth - 16, 300) // Minimum 300px width
+          // For first page, use full width minus margins
+          if (pageNum === 1) {
+            containerWidth = Math.max(window.innerWidth - 16, 300)
+          } else {
+            containerWidth = Math.max(containerWidth - 16, 300) // Minimum 300px width
+          }
           
           // Get default viewport to calculate scale
           const defaultViewport = page.getViewport({ scale: 1.0 })
