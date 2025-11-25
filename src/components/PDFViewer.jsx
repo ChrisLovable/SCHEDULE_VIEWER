@@ -183,42 +183,26 @@ function PDFViewer({ employeeId, pdfPath = '/INDIVIDUAL_SCHEDULES.PDF' }) {
     const availableHeight = windowHeight - headerHeight // Subtract header height
     
     // Calculate scale to fit page WIDTH of screen EXACTLY (fill horizontal space completely)
-    const scaleX = availableWidth / defaultViewport.width
-    const scaleY = availableHeight / defaultViewport.height
-    // Prioritize filling width - use scaleX to fill horizontal space exactly
-    let fitScale = scaleX
-    // But ensure height fits too - if scaleX makes it too tall, scale down
-    if (defaultViewport.height * scaleX > availableHeight) {
-      fitScale = scaleY // Use height-based scale if width-based is too tall
-    }
+    const scaleToFitWidth = availableWidth / defaultViewport.width
     
-    // Render at fixed high quality for crisp text (3x scale)
-    const renderScale = 3.0
+    // Render at high quality (3x the display scale for crisp text)
+    const renderScale = scaleToFitWidth * 3.0
     const renderViewport = page.getViewport({ scale: renderScale })
     
     // Set canvas internal size (high resolution for quality)
     canvas.width = renderViewport.width
     canvas.height = renderViewport.height
     
-    // Calculate display dimensions - FILL WIDTH to minimize white space
+    // Calculate display dimensions - FILL WIDTH
     const aspectRatio = defaultViewport.height / defaultViewport.width
+    const displayWidth = availableWidth
+    const displayHeight = displayWidth * aspectRatio
     
-    // Strategy: Fill full width (no side white space)
-    let displayWidth = availableWidth // Fill full width - eliminates side white space
-    let displayHeight = displayWidth * aspectRatio // Calculate height from width
-    
-    // Don't constrain height - let it be taller than viewport if needed
-    // This allows scrolling to bottom to show content
-    // If PDF is taller than screen, we'll scroll to bottom
-    // If PDF is shorter than screen, it will fit with minimal white space
-    
-    canvas.style.width = '100%'
+    // Set canvas display size to fill width
+    canvas.style.width = `${displayWidth}px`
     canvas.style.height = `${displayHeight}px`
     canvas.style.display = 'block'
-    canvas.style.position = 'relative' // Relative positioning within flex container
-    canvas.style.margin = '0 auto' // Center horizontally, zero vertical margin
-    canvas.style.top = '0'
-    canvas.style.left = '0'
+    canvas.style.margin = '0 auto'
     canvas.style.maxWidth = '100%'
 
     const context = canvas.getContext('2d', { alpha: false })
@@ -227,12 +211,7 @@ function PDFViewer({ employeeId, pdfPath = '/INDIVIDUAL_SCHEDULES.PDF' }) {
     context.imageSmoothingEnabled = true
     context.imageSmoothingQuality = 'high'
     
-    // Scale the context uniformly to maintain aspect ratio
-    // Calculate fit scale based on actual display dimensions
-    const actualFitScale = displayHeight / defaultViewport.height
-    const scaleRatio = actualFitScale / renderScale
-    context.scale(scaleRatio, scaleRatio)
-
+    // No scaling needed - render directly at the viewport scale
     const renderContext = {
       canvasContext: context,
       viewport: renderViewport,
