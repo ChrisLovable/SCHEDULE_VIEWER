@@ -4,7 +4,7 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #ff0000; /* TEMPORARY RED - to verify changes applied */
+  background: #ff0000 !important; /* TEMPORARY RED - to verify changes applied */
   position: relative;
 }
 
